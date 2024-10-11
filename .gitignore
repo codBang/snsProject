@@ -1,0 +1,26 @@
+# Node.js 관련
+node_modules/
+npm-debug.log
+yarn-error.log
+
+.env
+.env.example
+
+dist/
+build/
+
+logs/
+*.log
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+coverage/
+__tests__/
+
+data/
