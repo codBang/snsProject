@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
+const errorHandler = require('./middlewares/errorHandler'); // 에러 핸들러 추가
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -23,5 +24,8 @@ if (process.env.NODE_ENV !== 'test') {
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
 app.use('/comments', commentRoutes);
+
+// 에러 핸들러 미들웨어 추가 (항상 라우트 정의 후에 추가)
+app.use(errorHandler);
 
 module.exports = app;

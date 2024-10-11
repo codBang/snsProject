@@ -43,9 +43,11 @@ const loginUser = async (req, res) => {
     if (!validPassword)
       return res.status(400).send('Invalid email or password');
 
+    // JWT 토큰에 만료 시간 추가 (1시간)
     const token = jwt.sign(
       { _id: user._id, username: user.username },
-      'secretKey'
+      'secretKey',
+      { expiresIn: '1h' } // 1시간 만료 시간 설정
     );
     res.json({ token });
   } catch (error) {

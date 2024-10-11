@@ -11,7 +11,10 @@ const createPost = async (req, res) => {
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).send({
+      message: 'Failed to create post',
+      error: error.message,
+    });
   }
 };
 
@@ -20,7 +23,10 @@ const getAllPosts = async (req, res) => {
     const posts = await Post.find().populate('user', 'username email');
     res.json(posts);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to retrieve posts',
+      error: error.message,
+    });
   }
 };
 
@@ -32,7 +38,10 @@ const getUserPosts = async (req, res) => {
     );
     res.json(userPosts);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to retrieve user posts',
+      error: error.message,
+    });
   }
 };
 
@@ -48,7 +57,10 @@ const likePost = async (req, res) => {
     await post.save();
     res.json(post);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to like the post',
+      error: error.message,
+    });
   }
 };
 
@@ -64,7 +76,10 @@ const viewPost = async (req, res) => {
     await post.save();
     res.json(post);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to view the post',
+      error: error.message,
+    });
   }
 };
 
@@ -78,7 +93,10 @@ const addComment = async (req, res) => {
     const savedComment = await newComment.save();
     res.status(201).json(savedComment);
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(400).send({
+      message: 'Failed to add comment',
+      error: error.message,
+    });
   }
 };
 
@@ -93,7 +111,10 @@ const getCommentsByPostId = async (req, res) => {
 
     res.status(200).json(comments);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to retrieve comments',
+      error: error.message,
+    });
   }
 };
 
@@ -107,7 +128,10 @@ const deletePost = async (req, res) => {
     await Post.findByIdAndDelete(req.params.postId);
     res.status(200).send('Post deleted successfully');
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to delete post',
+      error: error.message,
+    });
   }
 };
 
@@ -123,7 +147,10 @@ const updatePost = async (req, res) => {
     const updatedPost = await post.save();
     res.status(200).json(updatedPost);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({
+      message: 'Failed to update post',
+      error: error.message,
+    });
   }
 };
 
@@ -134,7 +161,7 @@ module.exports = {
   likePost,
   viewPost,
   addComment,
-  getCommentsByPostId, // 댓글 조회 함수 추가
+  getCommentsByPostId,
   deletePost,
   updatePost,
 };
