@@ -2,16 +2,17 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// .env 파일을 불러오기 위한 dotenv 설정
+require('dotenv').config();
+
 const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // 필수 필드가 모두 입력되었는지 확인
     if (!username || !email || !password) {
       return res.status(400).send('Missing required fields');
     }
 
-    // 중복 이메일 체크
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).send('Email already exists');
@@ -43,11 +44,10 @@ const loginUser = async (req, res) => {
     if (!validPassword)
       return res.status(400).send('Invalid email or password');
 
-    // JWT 토큰에 만료 시간 추가 (1시간)
     const token = jwt.sign(
       { _id: user._id, username: user.username },
-      'secretKey',
-      { expiresIn: '1h' } // 1시간 만료 시간 설정
+      process.env.JWT_SECRET, // 환경 변수에서 비밀키를 가져옴
+      { expiresIn: '1h' }
     );
     res.json({ token });
   } catch (error) {

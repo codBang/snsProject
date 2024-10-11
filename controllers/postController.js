@@ -1,5 +1,7 @@
+const NodeCache = require('node-cache');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const cache = new NodeCache({ stdTTL: 60 }); // 캐시 TTL 60초 설정
 
 const createPost = async (req, res) => {
   try {
@@ -20,8 +22,36 @@ const createPost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate('user', 'username email');
-    res.json(posts);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const cacheKey = `posts-page-${page}-limit-${limit}`;
+    const cachedData = cache.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const posts = await Post.find()
+      .populate('user', 'username email')
+      .skip(skip)
+      .limit(limit);
+
+    if (!Array.isArray(posts)) {
+      return res.status(500).send('Data retrieval failed');
+    }
+
+    const totalPosts = await Post.countDocuments();
+
+    const result = {
+      posts,
+      totalPages: Math.ceil(totalPosts / limit),
+      currentPage: page,
+    };
+
+    cache.set(cacheKey, result);
+
+    res.json(result);
   } catch (error) {
     res.status(500).send({
       message: 'Failed to retrieve posts',
@@ -32,11 +62,17 @@ const getAllPosts = async (req, res) => {
 
 const getUserPosts = async (req, res) => {
   try {
-    const userPosts = await Post.find({ user: req.params.userId }).populate(
+    const userId = req.params.userId;
+    const userPosts = await Post.find({ user: userId }).populate(
       'user',
       'username email'
     );
-    res.json(userPosts);
+
+    if (!userPosts) {
+      return res.status(404).send('User posts not found');
+    }
+
+    res.status(200).json(userPosts);
   } catch (error) {
     res.status(500).send({
       message: 'Failed to retrieve user posts',
@@ -77,7 +113,7 @@ const viewPost = async (req, res) => {
     res.json(post);
   } catch (error) {
     res.status(500).send({
-      message: 'Failed to view the post',
+      message: 'Failed to view post',
       error: error.message,
     });
   }
@@ -118,6 +154,26 @@ const getCommentsByPostId = async (req, res) => {
   }
 };
 
+const updatePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).send('Post not found');
+
+    post.content = req.body.content || post.content;
+    if (req.file) {
+      post.image = req.file.path;
+    }
+
+    const updatedPost = await post.save();
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    res.status(400).send({
+      message: 'Failed to update post',
+      error: error.message,
+    });
+  }
+};
+
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
@@ -130,25 +186,6 @@ const deletePost = async (req, res) => {
   } catch (error) {
     res.status(500).send({
       message: 'Failed to delete post',
-      error: error.message,
-    });
-  }
-};
-
-const updatePost = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).send('Post not found');
-    if (post.user.toString() !== req.user._id)
-      return res.status(403).send('You are not authorized to update this post');
-
-    post.content = req.body.content || post.content;
-    post.image = req.file ? req.file.path : post.image;
-    const updatedPost = await post.save();
-    res.status(200).json(updatedPost);
-  } catch (error) {
-    res.status(500).send({
-      message: 'Failed to update post',
       error: error.message,
     });
   }
