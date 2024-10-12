@@ -1,7 +1,8 @@
 const NodeCache = require('node-cache');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
-const cache = new NodeCache({ stdTTL: 60 }); // 캐시 TTL 60초 설정
+// NodeCache 설정 최적화: TTL을 30초로, checkperiod를 60초로 설정
+const cache = new NodeCache({ stdTTL: 30, checkperiod: 60 });
 
 const createPost = async (req, res) => {
   try {

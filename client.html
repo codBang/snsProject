@@ -1,0 +1,37 @@
+<!-- /client.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SNS 실시간 테스트</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Socket.io 클라이언트 라이브러리 -->
+  </head>
+  <body>
+    <h1>SNS 실시간 알림 테스트</h1>
+    <div id="commentSection">
+      <h2>새 댓글 알림</h2>
+      <ul id="comments"></ul>
+    </div>
+    <script>
+      const socket = io();
+
+      // 서버에서 새로운 댓글이 추가되었을 때 알림을 받음
+      socket.on('receive_comment', (data) => {
+        const commentList = document.getElementById('comments');
+        const newComment = document.createElement('li');
+        newComment.textContent = `새 댓글: ${data.content} (작성자: ${data.user})`;
+        commentList.appendChild(newComment);
+      });
+
+      // 예시: 댓글 작성 이벤트 전송 (테스트용)
+      setTimeout(() => {
+        socket.emit('new_comment', {
+          content: '테스트 댓글입니다.',
+          user: '테스트 유저',
+        });
+      }, 2000);
+    </script>
+  </body>
+</html>
